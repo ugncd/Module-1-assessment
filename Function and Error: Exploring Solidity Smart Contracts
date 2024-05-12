@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: MIT
+// solidity version
+pragma solidity ^0.8.0;
+
+// smart contract
+contract MyContract {
+    address public user;
+    uint256 public value;
+
+    // constructor
+    constructor() {
+        user = msg.sender;
+    }
+
+    // require-
+    function requireEx(uint256 _newValue) external {
+        require(msg.sender == user, "The caller is not the user!");
+        require(_newValue != 0, "The new value cannot be zero!");
+
+        value = _newValue;
+    }
+
+    // assert
+    function assertEx(uint256 _value) external pure returns (uint256) {
+        assert(_value != 0);
+
+        return _value;
+    }
+
+    // revert
+    function revertEx(uint256 _value) external pure returns (uint256) {
+        if (_value == 0) {
+            revert("The value cannot be zero!");
+        }
+        return _value;
+    }
+}
