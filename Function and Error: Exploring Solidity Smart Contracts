@@ -1,36 +1,41 @@
 // SPDX-License-Identifier: MIT
-// solidity version
 pragma solidity ^0.8.0;
 
-// smart contract
-contract MyContract {
+contract UniqueContract {
     address public user;
     uint256 public value;
+    string private secretMessage;
 
-    // constructor
+    // Constructor
     constructor() {
         user = msg.sender;
     }
 
-    // require-
-    function requireEx(uint256 _newValue) external {
-        require(msg.sender == user, "The caller is not the user!");
-        require(_newValue != 0, "The new value cannot be zero!");
+    // Function to set a new value with additional conditions
+    function setValue(uint256 _newValue, string memory _secret) external {
+        require(msg.sender == user, "Only the owner can set the value!");
+        require(_newValue != 0, "New value cannot be zero!");
 
         value = _newValue;
+        secretMessage = _secret;
     }
 
-    // assert
-    function assertEx(uint256 _value) external pure returns (uint256) {
+    // Function to retrieve the secret message
+    function getSecretMessage() external view returns (string memory) {
+        return secretMessage;
+    }
+
+    // Function to assert the value is not zero
+    function assertValue(uint256 _value) external pure returns (uint256) {
         assert(_value != 0);
 
         return _value;
     }
 
-    // revert
-    function revertEx(uint256 _value) external pure returns (uint256) {
+    // Function to revert if value is zero
+    function revertIfZero(uint256 _value) external pure returns (uint256) {
         if (_value == 0) {
-            revert("The value cannot be zero!");
+            revert("Value cannot be zero!");
         }
         return _value;
     }
