@@ -1,42 +1,72 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract UniqueContract {
-    address public user;
-    uint256 public value;
-    string private secretMessage;
+contract JollibeeChickenjoy {
+    string public name = "Jollibee Chickenjoy Points";
+    string public symbol = "CJP";
+    uint8 public decimals = 0; // Points are whole numbers
+    uint256 public totalSupply;
 
-    // Constructor
-    constructor() {
-        user = msg.sender;
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event PointsEarned(address indexed user, uint256 value);
+    event PointsRedeemed(address indexed user, uint256 value);
+
+    constructor(uint256 _initialSupply) {
+        totalSupply = _initialSupply;
+        balanceOf[msg.sender] = _initialSupply;
+        emit Transfer(address(0), msg.sender, _initialSupply);
     }
 
-    // Function to set a new value with additional conditions
-    function setValue(uint256 _newValue, string memory _secret) external {
-        require(msg.sender == user, "Only the owner can set the value!");
-        require(_newValue != 0, "New value cannot be zero!");
-
-        value = _newValue;
-        secretMessage = _secret;
+    function transfer(address _to, uint256 _value) public returns (bool success) {
+        require(balanceOf[msg.sender] >= _value, "Insufficient balance");
+        _transfer(msg.sender, _to, _value);
+        return true;
     }
 
-    // Function to retrieve the secret message
-    function getSecretMessage() external view returns (string memory) {
-        return secretMessage;
+    function _transfer(address _from, address _to, uint256 _value) internal {
+        require(_to != address(0), "Invalid address");
+        balanceOf[_from] -= _value;
+        balanceOf[_to] += _value;
+        emit Transfer(_from, _to, _value);
     }
 
-    // Function to assert the value is not zero
-    function assertValue(uint256 _value) external pure returns (uint256) {
-        assert(_value != 0);
-
-        return _value;
+    function approve(address _spender, uint256 _value) public returns (bool success) {
+        allowance[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
+        return true;
     }
 
-    // Function to revert if value is zero
-    function revertIfZero(uint256 _value) external pure returns (uint256) {
-        if (_value == 0) {
-            revert("Value cannot be zero!");
-        }
-        return _value;
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+        require(_value <= balanceOf[_from], "Insufficient balance");
+        require(_value <= allowance[_from][msg.sender], "Allowance exceeded");
+        allowance[_from][msg.sender] -= _value;
+        _transfer(_from, _to, _value);
+        return true;
+    }
+
+    function earnPoints(address _user, uint256 _value) external returns (bool success) {
+        require(_value > 0, "Value must be greater than zero");
+        totalSupply += _value;
+        balanceOf[_user] += _value;
+        emit PointsEarned(_user, _value);
+        emit Transfer(address(0), _user, _value);
+        return true;
+    }
+
+    function redeemPoints(uint256 _value) external returns (bool success) {
+        require(balanceOf[msg.sender] >= _value, "Insufficient balance");
+        balanceOf[msg.sender] -= _value;
+        totalSupply -= _value;
+        emit PointsRedeemed(msg.sender, _value);
+        emit Transfer(msg.sender, address(0), _value);
+        return true;
+    }
+
+    function balanceOfUser(address _user) external view returns (uint256) {
+        return balanceOf[_user];
     }
 }
